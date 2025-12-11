@@ -1,22 +1,23 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JAVA_HOME'
+        maven 'M2_HOME'
+    }
+
     stages {
-        stage('Hello') {
+
+        stage('GIT') {
             steps {
-                echo 'Bienvenue dans mon pipeline Jenkins depuis Jenkinsfile !'
+                git branch: 'main',
+                    url: 'https://github.com/skanderhawess/DVOPS.git'
             }
         }
 
-        stage('Date') {
+        stage('Compile Stage') {
             steps {
-                sh 'date'
-            }
-        }
-
-        stage('Maven Version') {
-            steps {
-                sh 'mvn -version'
+                sh 'mvn clean compile'
             }
         }
     }
