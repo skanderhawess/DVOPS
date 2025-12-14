@@ -11,18 +11,30 @@ pipeline {
         sh './mvnw -B clean package -DskipTests'
       }
     }
+    stage('DEBUG Docker perms') {
+  steps {
+    sh '''
+      whoami
+      id
+      groups
+      ls -l /var/run/docker.sock
+      docker version || true
+    '''
+  }
+}
+
 
     stage('Build Docker image') {
       steps {
-        sh 'docker build -t $IMAGE .'
+        sh 'sudo docker build -t $IMAGE .'
       }
     }
 
     stage('Docker Login + Push') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-          sh 'docker push $IMAGE'
+          sh 'echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin'
+          sh 'sudo docker push $IMAGE'
         }
       }
     }
