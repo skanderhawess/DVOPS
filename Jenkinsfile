@@ -1,24 +1,30 @@
 pipeline {
-    agent any
+  agent { label 'ssh' }  // ou le label de ton agent (ex: agent-ssh)
 
-    tools {
-        jdk 'JAVA_HOME'
-        maven 'M2_HOME'
+  environment {
+    IMAGE = "skanderhawess/student-management:1.0"
+  }
+
+  stages {
+    stage('Build JAR') {
+      steps {
+        sh './mvnw -B clean package -DskipTests'
+      }
     }
 
-    stages {
-
-        stage('GIT') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/skanderhawess/DVOPS.git'
-            }
-        }
-
-        stage('Compile Stage') {
-            steps {
-                sh 'mvn clean compile'
-            }
-        }
+    stage('Build Docker image') {
+      steps {
+        sh 'docker build -t $IMAGE .'
+      }
     }
+
+    stage('Docker Login + Push') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+          sh 'docker push $IMAGE'
+        }
+      }
+    }
+  }
 }
