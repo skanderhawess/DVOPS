@@ -1,8 +1,11 @@
 pipeline {
-  agent { label 'ssh' }  // ou le label de ton agent (ex: agent-ssh)
+ agent any
 
   environment {
     IMAGE = "skanderhawess/student-management:1.0"
+    SONAR_ENV = "SonarQube"
+    SONAR_PROJECT_KEY = "student-management"
+    KUBECONFIG = "/var/lib/jenkins/.kube/config"
   }
 
   stages {
