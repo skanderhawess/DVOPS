@@ -26,19 +26,29 @@ pipeline {
     '''
   }
 }
-    stage('MVN SONARQUBE') {
+   stage('MVN SONARQUBE') {
+  steps {
+    withSonarQubeEnv("${SONAR_ENV}") {
+      withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_AUTH_TOKEN')]) {
+        sh '''
+          ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey='"${SONAR_PROJECT_KEY}"' \
+            -Dsonar.projectName='"${SONAR_PROJECT_KEY}"' \
+            -Dsonar.host.url="$SONAR_HOST_URL" \
+            -Dsonar.login="$SONAR_AUTH_TOKEN"
+        '''
+      }
+    }
+  }
+}
+    stage('Quality Gate') {
       steps {
-        withSonarQubeEnv("${SONAR_ENV}") {
-          sh """
-            ./mvnw -B sonar:sonar \
-              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-              -Dsonar.projectName=${SONAR_PROJECT_KEY} \
-              -Dsonar.host.url=http://192.168.56.10:9000 \
-              -Dsonar.login=$SONAR_AUTH_TOKEN
-          """
+        timeout(time: 10, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
         }
       }
     }
+
 
 
     stage('Build Docker image') {
