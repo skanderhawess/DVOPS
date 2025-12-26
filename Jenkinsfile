@@ -34,10 +34,10 @@ pipeline {
     withSonarQubeEnv("${SONAR_ENV}") {
       withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
         sh '''
-          ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+         /mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
             -Dsonar.projectKey=student-management \
             -Dsonar.projectName=student-management \
-            -Dsonar.host.url=http://192.168.56.10:9000 \
+            -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.token=$SONAR_TOKEN
         '''
       }
