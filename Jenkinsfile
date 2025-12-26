@@ -30,7 +30,6 @@ pipeline {
     stage('Build Docker image') {
       steps {
        sh "docker build -t ${IMAGE} ."
-       sh "docker push ${IMAGE}"
       }
     }
 
