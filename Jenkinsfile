@@ -1,12 +1,15 @@
 pipeline {
  agent any
+ options {
+    disableConcurrentBuilds()
+    timeout(time: 30, unit: 'MINUTES')
+  }
 
   environment {
     IMAGE = "skanderhawess/student-management:1.0"
     SONAR_ENV = "SonarQube"
     SONAR_PROJECT_KEY = "student-management"
     KUBECONFIG = "/var/lib/jenkins/.kube/config"
-   SONAR_AUTH_TOKEN = credentials('sonarqube-token')
   }
 
   stages {
@@ -29,14 +32,14 @@ pipeline {
    stage('MVN SONARQUBE') {
   steps {
     withSonarQubeEnv("${SONAR_ENV}") {
-      withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_AUTH_TOKEN')]) {
-        sh '''
-          ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey='"${SONAR_PROJECT_KEY}"' \
-            -Dsonar.projectName='"${SONAR_PROJECT_KEY}"' \
-            -Dsonar.host.url="$SONAR_HOST_URL" \
-            -Dsonar.login="$SONAR_AUTH_TOKEN"
-        '''
+      withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+        sh """
+          ./mvnw -B sonar:sonar \
+            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+            -Dsonar.projectName=${SONAR_PROJECT_KEY} \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.token=$SONAR_TOKEN
+        """
       }
     }
   }
