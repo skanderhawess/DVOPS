@@ -6,6 +6,7 @@ pipeline {
     SONAR_ENV = "SonarQube"
     SONAR_PROJECT_KEY = "student-management"
     KUBECONFIG = "/var/lib/jenkins/.kube/config"
+   SONAR_AUTH_TOKEN = credentials('sonarqube-token')
   }
 
   stages {
@@ -25,6 +26,19 @@ pipeline {
     '''
   }
 }
+    stage('MVN SONARQUBE') {
+      steps {
+        withSonarQubeEnv("${SONAR_ENV}") {
+          sh """
+            ./mvnw -B sonar:sonar \
+              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+              -Dsonar.projectName=${SONAR_PROJECT_KEY} \
+              -Dsonar.host.url=http://192.168.56.10:9000 \
+              -Dsonar.login=$SONAR_AUTH_TOKEN
+          """
+        }
+      }
+    }
 
 
     stage('Build Docker image') {
